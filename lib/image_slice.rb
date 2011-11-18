@@ -25,12 +25,11 @@ class ImageSlice
   
   def analyze_right_left_matches(other_slices)
     # find all the diffs compared to each of the others
+    puts "--------------------- analyze_right_left_matches for slice #{slice_number}"
     other_slices.each do |other|
       total_diff = self.class.calculate_column_diff @right_col, other.left_col
-#      @right_col.each_with_index do |val, idx|
-#        total_diff += (val - other.left_col[idx]).abs
-#      end
       @neighbor_info << NeighborInfo.new(other.slice_number, total_diff)
+      puts sprintf "  %2d %15d", other.slice_number, total_diff
     end
     # now find the likely next slice
     @average_neighbor_diff = 0
