@@ -5,9 +5,9 @@ image_locn = "data"
 image_name = "#{image_locn}/shredded_image.png"
 slice_size = 32
 
-puts "reading in img..."
+puts "Reading in img..."
 img = ChunkyPNG::Image.from_file(image_name)
-puts "...done"
+puts "...done."
 
 dim = img.dimension
 puts "Image dimensions (H:W): #{dim.height}:#{dim.width}"
@@ -42,11 +42,10 @@ end
 puts "There are #{slices.size} slices"
 
 slices.each_with_index do |slice, idx|
-  slice.analyze_right_left_matches slices - [slice]
+  slice.analyze_right_left_matches slices - [slice] ###, true
   likely_next = slice.likely_next_slice_info
-  puts sprintf "Slice %2d has likely next idx of %2d - %15d (%3d%%)", 
-    idx, likely_next.slice_number, likely_next.diff, 
-    (100 * likely_next.diff.to_f / slice.average_neighbor_diff).to_i  
+  puts sprintf "Slice %2d has likely next idx of %2d   -   diff = %5d, range = %3d", 
+    idx, likely_next.slice_number, likely_next.diff_info.total_diff, likely_next.diff_info.diff_range 
 end
 
 ## now write them out in pairs
@@ -66,3 +65,23 @@ end
 #  puts "Writing sample file #{name}"
 #  sample.save name
 #end
+
+leftmost_slice_idx = 8
+# Finally, once I've found the start, write out the whole image
+name = image_name.gsub(/\.png/, "_unshredded.png")
+puts "Writing reconstructed file #{name}..."
+reconstructed = ChunkyPNG::Image.new dim.width, dim.height
+slice = slices[leftmost_slice_idx]
+tgt_idx = 0
+loop do
+  (slice.start_col_idx..slice.end_col_idx).each do |idx|
+    reconstructed.replace_column! tgt_idx, img.column(idx)
+    tgt_idx += 1
+  end
+  next_slice_numer = slice.likely_next_slice_info.slice_number
+  break if next_slice_numer == leftmost_slice_idx
+  slice = slices[next_slice_numer]
+end
+reconstructed.save name
+puts "...done."
+

@@ -19,30 +19,38 @@ class ImageSlice
     (ChunkyPNG::Color.grayscale_teint(a) - ChunkyPNG::Color.grayscale_teint(b)).abs
   end
   
-  def self.calculate_column_diff(left_col, right_col)
-    diff = 0
+  DiffInfo = Struct.new(:total_diff, :diff_range)
+  
+  def self.calculate_column_diff_info(left_col, right_col)
+    diff_min = 1000
+    diff_max = 0
+    total_diff = 0
     left_col.each_with_index do |val, idx|
-      diff += pixel_diff(val, right_col[idx])
+      diff = pixel_diff(val, right_col[idx])
+      total_diff += diff
+      diff_min = diff if diff < diff_min
+      diff_max = diff if diff > diff_max
     end
-    diff
+    DiffInfo.new total_diff, diff_max - diff_min
   end
   
-  NeighborInfo = Struct.new(:slice_number, :diff)
+  NeighborInfo = Struct.new(:slice_number, :diff_info)
   
   def analyze_right_left_matches(other_slices, verbose = nil)
     # find all the diffs compared to each of the others
     puts "--------------------- analyze_right_left_matches for slice #{slice_number}" if verbose
     other_slices.each do |other|
-      total_diff = self.class.calculate_column_diff @right_col, other.left_col
-      @neighbor_info << NeighborInfo.new(other.slice_number, total_diff)
-      puts sprintf "  %2d %15d", other.slice_number, total_diff if verbose
+      diff_info = self.class.calculate_column_diff_info @right_col, other.left_col
+      @neighbor_info << NeighborInfo.new(other.slice_number, diff_info)
+      puts sprintf "  %2d %10d, %5d", other.slice_number, diff_info.total_diff, diff_info.diff_range if verbose
     end
     # now find the likely next slice
     @average_neighbor_diff = 0
     @likely_next_slice_info = @neighbor_info[0]
-    @neighbor_info[1..-1].each do |info|
-      @average_neighbor_diff += info.diff
-      @likely_next_slice_info = info if info.diff < @likely_next_slice_info.diff
+    @neighbor_info[1..-1].each do |neighbor_info|
+      diff = neighbor_info.diff_info.total_diff
+      @average_neighbor_diff += diff
+      @likely_next_slice_info = neighbor_info if diff < @likely_next_slice_info.diff_info.total_diff
     end
     @average_neighbor_diff /= @neighbor_info.size
   end
