@@ -48,23 +48,23 @@ slices.each_with_index do |slice, idx|
     idx, likely_next.slice_number, likely_next.diff_info.total_diff, likely_next.diff_info.diff_range 
 end
 
-## now write them out in pairs
-#slices.each do |slice|
-#  name = "#{image_locn}/#{slice.slice_number}_#{slice.likely_next_slice_info.slice_number}_potential.png"
-#  sample = ChunkyPNG::Image.new slice_size*2, dim.height
-#  tgt_idx = 0
-#  (slice.start_col_idx..slice.end_col_idx).each do |idx|
-#    sample.replace_column! tgt_idx, img.column(idx)
-#    tgt_idx += 1
-#  end
-#  slice = slices[slice.likely_next_slice_info.slice_number]
-#  (slice.start_col_idx..slice.end_col_idx).each do |idx|
-#    sample.replace_column! tgt_idx, img.column(idx)
-#    tgt_idx += 1
-#  end
-#  puts "Writing sample file #{name}"
-#  sample.save name
-#end
+# now write them out in pairs
+slices.each do |slice|
+  name = "#{image_locn}/#{slice.slice_number}_#{slice.likely_next_slice_info.slice_number}_potential.png"
+  sample = ChunkyPNG::Image.new slice_size*2, dim.height
+  tgt_idx = 0
+  (slice.start_col_idx..slice.end_col_idx).each do |idx|
+    sample.replace_column! tgt_idx, img.column(idx)
+    tgt_idx += 1
+  end
+  slice = slices[slice.likely_next_slice_info.slice_number]
+  (slice.start_col_idx..slice.end_col_idx).each do |idx|
+    sample.replace_column! tgt_idx, img.column(idx)
+    tgt_idx += 1
+  end
+  puts "Writing sample file #{name}"
+  sample.save name
+end
 
 leftmost_slice_idx = 8
 # Finally, once I've found the start, write out the whole image
