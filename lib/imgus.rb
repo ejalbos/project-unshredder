@@ -13,6 +13,8 @@ slices = []
 slice_size = 32
 max_idx = dim.width - 1
 0.step(max_idx, slice_size) do |left_idx|
-  slices << ImageSlice.new(img, left_idx, left_idx+slice_size-1)
+  slices << ImageSlice.new(0, img, left_idx, left_idx+slice_size-1)
 end
 puts "There are #{slices.size} slices"
+
+slices[0].analyze_right_left_matches slices[1..-1]
