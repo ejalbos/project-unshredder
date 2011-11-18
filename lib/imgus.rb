@@ -12,19 +12,19 @@ dim = img.dimension
 puts "Image dimensions (H:W): #{dim.height}:#{dim.width}"
 max_idx = dim.width - 1
 
-puts "Finding slice points"
-diff_array = []
-left_col = img.column 0
-(1..max_idx).each do |idx|
-  right_col = img.column idx
-  diff_array << ImageSlice.calulate_column_diff(left_col, right_col)
-  left_col = right_col
-end
-#  puts "#{idx-1}-#{idx}: #{ImageSlice.calulate_column_diff left_col, right_col}"
-diff_array[0..-2].each_with_index do |val, idx|
-  next_val = diff_array[idx+1]
-  puts "- break point at col #{idx+1}-#{idx+2}" if next_val > val*2
-end
+#puts "Finding slice points"
+#diff_array = []
+#left_col = img.column 0
+#(1..max_idx).each do |idx|
+#  right_col = img.column idx
+#  diff_array << ImageSlice.calulate_column_diff(left_col, right_col)
+#  left_col = right_col
+#end
+##  puts "#{idx-1}-#{idx}: #{ImageSlice.calulate_column_diff left_col, right_col}"
+#diff_array[0..-2].each_with_index do |val, idx|
+#  next_val = diff_array[idx+1]
+#  puts "- break point at col #{idx+1}-#{idx+2}" if next_val > val*2
+#end
 
 puts "Creating slices based on known fixed width of: #{slice_size}"
 slices = []
