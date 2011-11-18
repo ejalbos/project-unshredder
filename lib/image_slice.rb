@@ -8,6 +8,15 @@ class ImageSlice
     @left_col = source_img.column start_col_idx
     @right_col = source_img.column end_col_idx
     @neighbor_info = []
+    @likely_next_idx = nil
+  end
+  
+  def self.calulate_column_diff(left_col, right_col)
+    diff = 0
+    left_col.each_with_index do |val, idx|
+      diff += (val - right_col[idx]).abs
+    end
+    diff
   end
   
   NeighborInfo = Struct.new(:slice_number, :diff)
@@ -21,5 +30,15 @@ class ImageSlice
 #      puts total_diff
       @neighbor_info << NeighborInfo.new(other.slice_number, total_diff)
     end
+  end
+  
+  def likely_next_idx
+    @likely_next_idx ||= lambda {
+      likely_neighbor = @neighbor_info[0]
+      @neighbor_info[1..-1].each do |info|
+        likely_neighbor = info if likely_neighbor.diff > info.diff
+      end
+      @likely_next_idx = likely_neighbor.slice_number
+    }.call
   end
 end
