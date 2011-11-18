@@ -1,7 +1,8 @@
 require 'chunky_png'
 require_relative 'image_slice'
 
-image_name = 'data/shredded_image.png'
+image_locn = "data"
+image_name = "#{image_locn}/shredded_image.png"
 slice_size = 32
 
 puts "reading in img..."
@@ -17,7 +18,7 @@ max_idx = dim.width - 1
 #left_col = img.column 0
 #(1..max_idx).each do |idx|
 #  right_col = img.column idx
-#  diff_array << ImageSlice.calulate_column_diff(left_col, right_col)
+#  diff_array << ImageSlice.calculate_column_diff(left_col, right_col)
 #  left_col = right_col
 #end
 ##  puts "#{idx-1}-#{idx}: #{ImageSlice.calulate_column_diff left_col, right_col}"
@@ -42,13 +43,26 @@ puts "There are #{slices.size} slices"
 
 slices.each_with_index do |slice, idx|
   slice.analyze_right_left_matches slices - [slice]
-  puts "Slice #{idx} has likely next idx of #{slice.likely_next_idx}"
+  likely_next = slice.likely_next_slice_info
+  puts sprintf "Slice %2d has likely next idx of %2d - %15d (%3d%%)", 
+    idx, likely_next.slice_number, likely_next.diff, 
+    (100 * likely_next.diff.to_f / slice.average_neighbor_diff).to_i  
 end
 
-#
-#
-#slices[0].analyze_right_left_matches slices[1..-1]
-#slices[0].neighbor_info.each do |info|
-#  puts "#{info.slice_number} - #{info.diff}"
+## now write them out in pairs
+#slices.each do |slice|
+#  name = "#{image_locn}/#{slice.slice_number}_#{slice.likely_next_slice_info.slice_number}_potential.png"
+#  sample = ChunkyPNG::Image.new slice_size*2, dim.height
+#  tgt_idx = 0
+#  (slice.start_col_idx..slice.end_col_idx).each do |idx|
+#    sample.replace_column! tgt_idx, img.column(idx)
+#    tgt_idx += 1
+#  end
+#  slice = slices[slice.likely_next_slice_info.slice_number]
+#  (slice.start_col_idx..slice.end_col_idx).each do |idx|
+#    sample.replace_column! tgt_idx, img.column(idx)
+#    tgt_idx += 1
+#  end
+#  puts "Writing sample file #{name}"
+#  sample.save name
 #end
-#puts "Likely next slice index: #{slices[0].likely_next_idx}"
