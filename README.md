@@ -8,7 +8,7 @@ Along the way various info printed.
 
 Finally, writes out all the 2-slices and then the final reconstructed image.
 
-Haven't yet solved the issue about determining where the image ends (the alg finds sequence pairs, which gives you a cylinder, but until you find the one that doesn't really match, you can't break it out to a flat image).
+NOTE: Now can find where the image cylinder should be broken in order to know which slice to start with.
 
 ## Running It
 
