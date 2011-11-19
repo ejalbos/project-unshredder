@@ -7,12 +7,15 @@ class ImageSlice
   attr_reader :likely_next_slice_info
   attr_reader :average_neighbor_diff
   attr_reader :start_col_idx, :end_col_idx
+  attr_reader :right_edge_left_diff
   
   def initialize(slice_number, source_img, start_col_idx, end_col_idx)
     @slice_number, @source_img, @start_col_idx, @end_col_idx = slice_number, source_img, start_col_idx, end_col_idx
     @left_col = source_img.column start_col_idx
     @right_col = source_img.column end_col_idx
     @neighbor_info = []
+    info = self.class.calculate_column_diff_info source_img.column(end_col_idx-1), @right_col
+    @right_edge_left_diff = info.total_diff
   end
   
   def self.pixel_diff(a, b)

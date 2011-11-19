@@ -52,12 +52,33 @@ loop do
 end
 puts "There are #{slices.size} slices"
 
+BreakInfo = Struct.new(:slice, :right_edge_left_diff, :slice_diff)
+
+break_info = []
 slices.each_with_index do |slice, idx|
   slice.analyze_right_left_matches slices - [slice] ###, true
   likely_next = slice.likely_next_slice_info
-  puts sprintf "Slice %2d has likely next idx of %2d   -   diff = %5d, range = %3d", 
-    idx, likely_next.slice_number, likely_next.diff_info.total_diff, likely_next.diff_info.diff_range 
+  info =  BreakInfo.new(slice, slice.right_edge_left_diff, likely_next.diff_info.total_diff) 
+  puts sprintf "Slice %2d has likely next idx of %2d   -  right_edge_left_diff = %5d, slice_diff = %5d", 
+    idx, likely_next.slice_number, info.right_edge_left_diff, info.slice_diff 
+  break_info << info
 end
+
+start_slice_idxs = []
+puts "Determining image break point..."
+break_info.each do |info|
+  start_slice_idxs << info.slice.likely_next_slice_info.slice_number if info.slice_diff > 3*info.right_edge_left_diff
+end
+if start_slice_idxs.size == 0
+  puts "Unable to determine a starting slice"
+  exit
+elsif start_slice_idxs.size > 1
+  puts "Found the folloing multiple starting slices: #{start_slice_idxs}"
+  exit
+end
+
+leftmost_slice_idx = start_slice_idxs[0]
+puts "The starting slice is idx = #{leftmost_slice_idx}"
 
 # now write them out in pairs
 slices.each do |slice|
@@ -77,7 +98,7 @@ slices.each do |slice|
   sample.save name
 end
 
-leftmost_slice_idx = 8
+#leftmost_slice_idx = 8
 # Finally, once I've found the start, write out the whole image
 name = image_name.gsub(/\.png/, "_unshredded.png")
 puts "Writing reconstructed file #{name}..."
