@@ -14,18 +14,29 @@ puts "Image dimensions (H:W): #{dim.height}:#{dim.width}"
 max_idx = dim.width - 1
 
 #puts "Finding slice points"
-#diff_array = []
+## get the first differential
+#diff_info_array = []
 #left_col = img.column 0
 #(1..max_idx).each do |idx|
 #  right_col = img.column idx
-#  diff_array << ImageSlice.calculate_column_diff(left_col, right_col)
+#  diff_info_array << ImageSlice.calculate_column_diff_info(left_col, right_col)
 #  left_col = right_col
 #end
+## and now the second differential
 ##  puts "#{idx-1}-#{idx}: #{ImageSlice.calulate_column_diff left_col, right_col}"
-#diff_array[0..-2].each_with_index do |val, idx|
-#  next_val = diff_array[idx+1]
-#  puts "- break point at col #{idx+1}-#{idx+2}" if next_val > val*2
+##diff_info_array[0..-2].each_with_index do |val, idx|
+#diff_diff = []
+#prev_diff = 0
+#diff_info_array[0..-2].each_with_index do |val, idx|
+#  this_diff = val.total_diff
+#  diff_diff << this_diff - prev_diff
+#  puts sprintf "Slice %3d-%3d, diffs = %5d, %7d", idx, idx+1, this_diff, diff_diff.last
+#  prev_diff = this_diff
+##  next_val = diff_array[idx+1]
+##  puts "- break point at col #{idx+1}-#{idx+2}" if next_val > val*2
 #end
+#
+#exit # DEBUG
 
 puts "Creating slices based on known fixed width of: #{slice_size}"
 slices = []
