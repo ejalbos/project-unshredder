@@ -12,6 +12,7 @@ task :unshred do
 end
 
 desc "Run the shred app - NOT YET IMPLEMENTED"
-task :shred do
-  system "bundle exec ruby lib/image_shred.rb"
+task :shred, :filename do |t, args|
+  filename = args[:filename]
+  system "bundle exec ruby lib/image_shred.rb #{filename}"
 end

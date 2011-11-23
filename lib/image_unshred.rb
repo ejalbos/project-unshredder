@@ -1,6 +1,18 @@
 require 'chunky_png'
 require_relative 'image_slice'
 
+class ImageUnshred
+  
+end
+
+p "Args..."
+ARGV.each do|a|
+  puts "Argument: #{a}"
+end
+p "...done"
+
+exit # DEBUG
+
 image_locn = "data"
 image_name = "#{image_locn}/shredded_image.png"
 slice_size = 32
