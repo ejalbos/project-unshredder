@@ -3,26 +3,26 @@ require_relative 'image_slice'
 
 class ImageShred
   def initialize(filename)
-    
+    @fname_orig = filename
+    @img = ChunkyPNG::Image.from_file(filename)
   end
-    
 end
 
-#p "Program #{$PROGRAM_NAME} called."
-#p "Args..."
-#ARGV.each do|a|
-#  puts "Argument: #{a}"
-#end
-#p "...done"
-
+puts "--- Image Shredder ---"
 filename = ARGV[0]
 unless filename
-  p "--- Image Shredder --- you must specify a filename to shred"
-  p "  try: 'rake shred[filename]'"
-  p "   or: 'bundle exec ruby lib/image_shred.rb filename'"
+  puts "- you must specify a filename to shred"
+  puts "  try: 'rake shred[filename]'"
+  puts "   or: 'bundle exec ruby lib/image_shred.rb filename'"
   exit
 end
 
-is = ImageShred.new filename
+begin
+  is = ImageShred.new filename
+  is.process
+  is.output
+rescue StandardError => err
+  puts "- processing error: #{err.message}"
+end
 
 exit # DEBUG
