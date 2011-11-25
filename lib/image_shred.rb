@@ -17,8 +17,8 @@ class ImageShred
   end
   
   def output
-    new_fname = @fname_orig.sub(/\.png\Z/, "_shredded.png")
-    puts "Outputing image '#{new_fname}'..."
+    @shredded_fname = @fname_orig.sub(/\.png\Z/, "_shredded(#{@slice_width}pxl).png")
+    puts "Outputing image '#{@shredded_fname}'..."
     randomize_slices
     output_slices
     puts "... output done."
@@ -27,11 +27,20 @@ class ImageShred
 private
   
   def randomize_slices
-    
+    @shuffled_slices = @slices.sample @slices.size
+#    @shuffled_slices.each { |s| p s.slice_number }
   end
   
   def output_slices
-    
+    shredded_img = ChunkyPNG::Image.new @img.dimension.width, @img.dimension.height 
+    tgt_idx = 0
+    @shuffled_slices.each do |slice|
+      (slice.start_col_idx..slice.end_col_idx).each do |idx|
+        shredded_img.replace_column! tgt_idx, @img.column(idx)
+        tgt_idx += 1
+      end
+    end
+    shredded_img.save @shredded_fname
   end
   
   def determine_slicing
