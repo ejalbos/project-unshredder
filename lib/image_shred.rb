@@ -11,21 +11,45 @@ class ImageShred
   
   def process
     puts "Processing image..."
-    dim = @img.dimension
-    puts "- image is #{dim.width}x#{dim.height} pixels"
-    num_slices, slice_width = determine_slice_params dim.width
-    puts "- will shred into #{num_slices} slices, each #{slice_width} pixels wide"
-    puts "TBD"
+    determine_slicing
+    slice_image
     puts "... processing done."
   end
   
   def output
     new_fname = @fname_orig.sub(/\.png\Z/, "_shredded.png")
     puts "Outputing image '#{new_fname}'..."
-    puts "TBD"
+    randomize_slices
+    output_slices
     puts "... output done."
   end
+  
 private
+  
+  def randomize_slices
+    
+  end
+  
+  def output_slices
+    
+  end
+  
+  def determine_slicing
+    dim = @img.dimension
+    puts "- image is #{dim.width}x#{dim.height} pixels"
+    @num_slices, @slice_width = determine_slice_params dim.width
+  end
+  
+  def slice_image
+    puts "- will shred into #{@num_slices} slices, each #{@slice_width} pixels wide"
+    @slices = []
+    left_col, right_col = 0, @slice_width-1
+    @num_slices.times do |idx|
+      @slices << ImageSlice.new(idx, @img, left_col, right_col)
+      left_col += @slice_width
+      right_col += @slice_width
+    end
+  end
   
   def determine_slice_params(total_width)
     # try for about 20 slices, go larger or smaller depending on image size
@@ -48,10 +72,11 @@ private
       end
     end
   end
-  
 end
 
-puts "--- Image Shredder ---"
+#===================================================== MAIN
+
+puts "--- Image Shredder: BEGIN ---"
 filename = ARGV[0]
 unless filename
   puts "- you must specify a filename to shred"
@@ -68,4 +93,4 @@ rescue StandardError => err
   puts "- processing error: #{err.message}"
 end
 
-exit # DEBUG
+puts "--- Image Shredder: END ---"
