@@ -28,17 +28,14 @@ private
   
   def randomize_slices
     @shuffled_slices = @slices.sample @slices.size
-#    @shuffled_slices.each { |s| p s.slice_number }
   end
   
   def output_slices
     shredded_img = ChunkyPNG::Image.new @img.dimension.width, @img.dimension.height 
     tgt_idx = 0
     @shuffled_slices.each do |slice|
-      (slice.start_col_idx..slice.end_col_idx).each do |idx|
-        shredded_img.replace_column! tgt_idx, @img.column(idx)
-        tgt_idx += 1
-      end
+      slice.transfer_self_at(shredded_img, tgt_idx)
+      tgt_idx += slice.width
     end
     shredded_img.save @shredded_fname
   end

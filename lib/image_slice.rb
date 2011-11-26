@@ -18,6 +18,17 @@ class ImageSlice
     @right_edge_left_diff = info.total_diff
   end
   
+  def width
+    @end_col_idx - @start_col_idx + 1
+  end
+  
+  def transfer_self_at(target_img, target_starting_idx)
+    (@start_col_idx..@end_col_idx).each do |idx|
+      target_img.replace_column! target_starting_idx, @source_img.column(idx)
+      target_starting_idx += 1
+    end
+  end
+  
   def self.pixel_diff(a, b)
     (ChunkyPNG::Color.grayscale_teint(a) - ChunkyPNG::Color.grayscale_teint(b)).abs
   end
