@@ -31,13 +31,16 @@ private
   def output_partials
     # now write them out in pairs
     @slices.each do |slice|
-      name = @fname_orig.sub(/\.png\Z/, "_potential_#{slice.slice_number}_#{slice.likely_next_slice.slice_number}.png")
-      sample = ChunkyPNG::Image.new @slice_width*2, @img.dimension.height
+      next_slice = @slices[slice.likely_next_slice.slice_number]
+      total_width = slice.width + next_slice.width
+      sample = ChunkyPNG::Image.new total_width, @img.dimension.height
+      
       tgt_idx = 0
       slice.transfer_self_at(sample, tgt_idx)
       tgt_idx += slice.width
-      slice = @slices[slice.likely_next_slice.slice_number]
-      slice.transfer_self_at(sample, tgt_idx)
+      next_slice.transfer_self_at(sample, tgt_idx)
+      
+      name = @fname_orig.sub(/\.png\Z/, "_potential_#{slice.slice_number}_#{next_slice.slice_number}.png")
       puts "- writing pairing file #{name}"
       sample.save name
     end
