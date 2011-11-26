@@ -1,4 +1,5 @@
 require 'chunky_png'
+require 'ostruct'
 require_relative 'image_slice'
 
 class ImageUnshred
@@ -63,37 +64,36 @@ private
     reconstructed.save name
   end
   
-  BreakInfo = Struct.new(:slice, :right_edge_left_diff, :slice_diff)
+  BreakInfo = Struct.new(:slice, :right_edge_left_diff, :right_edge_neighbor_diff)
   
   def determine_likely_ordering
     puts "- determining likely ordering"
     @slices.each do |slice|
       slice.preprocess
     end
-    @break_info = []
+    @img_break_info = []
     @slices.each_with_index do |slice, idx|
       slice.analyze_right_left_matches @slices - [slice] ###, true
-      likely_next = slice.likely_next_slice
-      info =  BreakInfo.new(slice, slice.right_edge_left_diff, likely_next.diff_info.total_diff) 
-      puts sprintf "-- slice %2d has likely next idx of %2d   -  right_edge_left_diff = %5d, slice_diff = %5d", 
-        idx, likely_next.slice_number, info.right_edge_left_diff, info.slice_diff 
-      @break_info << info
+      next_slice = slice.likely_next_slice
+      info = OpenStruct.new(slice: slice,
+        re_left_diff: slice.right_edge_left_diff,
+        re_nbr_diff: next_slice.diff_info.total_diff,
+        change_ratio: next_slice.diff_info.total_diff.to_f / slice.right_edge_left_diff)
+      puts sprintf "-- slice %2d has likely next idx of %2d   -  left/nbr/ratio = %6d/%6d/%5.2f", 
+        idx, next_slice.slice_number, info.re_left_diff, info.re_nbr_diff, info.change_ratio
+      @img_break_info << info
     end
   end
   
   def determine_cylinder_break
-    start_slice_idxs = []
-    puts "- determining image break point"
-    @break_info.each do |info|
-      start_slice_idxs << info.slice.likely_next_slice.slice_number if info.slice_diff > 3*info.right_edge_left_diff
+    max_change_ratio = 0
+    @leftmost_slice_idx = -1
+    @img_break_info.each do |info|
+      if info.change_ratio > max_change_ratio
+        max_change_ratio = info.change_ratio
+        @leftmost_slice_idx = info.slice.likely_next_slice.slice_number
+      end
     end
-    if start_slice_idxs.size == 0
-      raise "Unable to determine a starting slice"
-    elsif start_slice_idxs.size > 1
-      raise "Found the following multiple starting slices: #{start_slice_idxs}"
-    end
-
-    @leftmost_slice_idx = start_slice_idxs[0]
     puts "- the starting slice is at idx = #{@leftmost_slice_idx}"  
   end
   

@@ -38,14 +38,10 @@ class ImageSlice
   DiffInfo = Struct.new(:total_diff, :diff_range)
   
   def self.calculate_column_diff_info(left_col, right_col)
-#    diff_min = 1000
-#    diff_max = 0
     total_diff = 0
     left_col.each_with_index do |val, idx|
       diff = pixel_diff(val, right_col[idx])
       total_diff += diff
-#      diff_min = diff if diff < diff_min
-#      diff_max = diff if diff > diff_max
     end
     OpenStruct.new(total_diff: total_diff)
   end
