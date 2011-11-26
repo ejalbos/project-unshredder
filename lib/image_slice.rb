@@ -78,10 +78,5 @@ class ImageSlice
   def calculate_likely_neighbor_extras
     diff_info = @likely_next_slice.diff_info
     diff_info.change_ratio = diff_info.total_diff.to_f / @right_edge_left_diff
-#    info = OpenStruct.new(
-#      re_left_diff: @right_edge_left_diff,
-#      re_nbr_diff: next_slice.diff_info.total_diff,
-#      change_ratio: next_slice.diff_info.total_diff.to_f / @right_edge_left_diff
-#    )
   end
 end
