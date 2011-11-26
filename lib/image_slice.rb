@@ -9,6 +9,8 @@ class ImageSlice
   attr_reader :start_col_idx, :end_col_idx
   attr_reader :right_edge_left_diff
   
+  MINIMUM_SLICE_WIDTH = 10
+  
   def initialize(slice_number, source_img, start_col_idx, end_col_idx)
     @slice_number, @source_img, @start_col_idx, @end_col_idx = slice_number, source_img, start_col_idx, end_col_idx
     @left_col = source_img.column start_col_idx

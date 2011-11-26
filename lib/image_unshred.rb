@@ -41,7 +41,7 @@ private
       tgt_idx += slice.width
       next_slice.transfer_self_at(sample, tgt_idx)
       
-      name = @fname_orig.sub(/\.png\Z/, "_potential_#{slice.slice_number}_#{next_slice.slice_number}.png")
+      name = @fname_orig.sub(/\.png\Z/, "_partial_#{slice.slice_number}_#{next_slice.slice_number}.png")
       puts "- writing pairing file #{name}"
       sample.save name
     end
@@ -122,15 +122,21 @@ private
   def create_slices
     dim = @img.dimension
     puts "- image is #{dim.width}x#{dim.height} pixels"
-    @num_slices = dim.width / @slice_width
-    puts "- creating slices based on known slice width of #{@slice_width} pixels"
-    @slices = []
-    left_col, right_col = 0, @slice_width-1
-    @num_slices.times do |idx|
-      @slices << ImageSlice.new(idx, @img, left_col, right_col)
-      puts "-- slice #{idx} using col #{left_col}-#{right_col}"
-      left_col += @slice_width
-      right_col += @slice_width
+    if @slice_width
+      @num_slices = dim.width / @slice_width
+      puts "- creating slices based on known slice width of #{@slice_width} pixels"
+      @slices = []
+      left_col, right_col = 0, @slice_width-1
+      @num_slices.times do |idx|
+        @slices << ImageSlice.new(idx, @img, left_col, right_col)
+        puts "-- slice #{idx} using col #{left_col}-#{right_col}"
+        left_col += @slice_width
+        right_col += @slice_width
+      end
+    else
+#      puts "- searching image for slices"
+#      min_slice_width = ImageSlice::MINIMUM_SLICE_WIDTH
+#      left_col, right_col = 0
     end
     puts "- there are #{@slices.size} slices"
   end
