@@ -65,5 +65,23 @@ class ImageSlice
       diff_to_new_neighbor = neighbor.diff_info.total_diff
       @likely_next_slice = neighbor if diff_to_new_neighbor < @likely_next_slice.diff_info.total_diff
     end
+    # now that we know, collect a bit more info and inform
+    calculate_likely_neighbor_extras
+    puts sprintf "-- slice %2d has likely next idx of %2d   -  left/nbr/ratio = %6d/%6d/%5.2f", 
+      @slice_number, 
+      @likely_next_slice.slice_number, 
+      @right_edge_left_diff, 
+      @likely_next_slice.diff_info.total_diff, 
+      @likely_next_slice.diff_info.change_ratio
+  end
+  
+  def calculate_likely_neighbor_extras
+    diff_info = @likely_next_slice.diff_info
+    diff_info.change_ratio = diff_info.total_diff.to_f / @right_edge_left_diff
+#    info = OpenStruct.new(
+#      re_left_diff: @right_edge_left_diff,
+#      re_nbr_diff: next_slice.diff_info.total_diff,
+#      change_ratio: next_slice.diff_info.total_diff.to_f / @right_edge_left_diff
+#    )
   end
 end

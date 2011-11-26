@@ -86,29 +86,84 @@ private
     @slices.each do |slice|
       slice.preprocess
     end
+    find_slice_pairs_based_on_lowest_diff
+#    adjust_for_double_next_usage
+#    collect_break_info
+  end
+  
+  def adjust_for_double_next_usage
+    # see if there is an unused slice
+    if unused_slice_idx = an_unused_right_slice
+      puts "-- unused right slice with idx #{unused_slice_idx}"
+      # find which slices are using which others
+      next_usage = {}
+      @slices.each do |slice|
+        next_idx = slice.likely_next_slice.slice_number
+        users = next_usage[next_idx] || []
+        users << slice.slice_number
+        next_usage[next_idx] = users
+      end
+      # now find the multiples
+      overused_slice_idx = overusing_slices = nil
+      next_usage.each do |k, v|
+        if v.size > 1
+          puts "-- slice #{k} multiply used by slices #{v}"
+          overused_slice_idx = k
+          overusing_slices = v
+          break
+        end
+      end
+      # now make the higher change ratio one use the unused slice
+#      max_change_ratio, max_idx = 0, nil
+#      overusing_slices.inject(0.to_f) do |max_change, slice|
+#        idx = slice.slice_number
+#        if slice.li
+#      end
+#      exit
+    else
+      puts "- no unused right slices"
+    end
+  end
+  
+#  def collect_break_info
+#    @img_break_info = []
+#    @slices.each_with_index do |slice, idx|
+#      next_slice = slice.likely_next_slice
+#      info = OpenStruct.new(slice: slice,
+#        re_left_diff: slice.right_edge_left_diff,
+#        re_nbr_diff: next_slice.diff_info.total_diff,
+#        change_ratio: next_slice.diff_info.total_diff.to_f / slice.right_edge_left_diff)
+#      puts sprintf "-- slice %2d has likely next idx of %2d   -  left/nbr/ratio = %6d/%6d/%5.2f", 
+#        idx, next_slice.slice_number, info.re_left_diff, info.re_nbr_diff, info.change_ratio
+#      @img_break_info << info
+#    end
+#  end
+  
+  def find_slice_pairs_based_on_lowest_diff
     @img_break_info = []
     @slices.each_with_index do |slice, idx|
       slice.analyze_right_left_matches @slices - [slice] ###, true
-      next_slice = slice.likely_next_slice
-      info = OpenStruct.new(slice: slice,
-        re_left_diff: slice.right_edge_left_diff,
-        re_nbr_diff: next_slice.diff_info.total_diff,
-        change_ratio: next_slice.diff_info.total_diff.to_f / slice.right_edge_left_diff)
-      puts sprintf "-- slice %2d has likely next idx of %2d   -  left/nbr/ratio = %6d/%6d/%5.2f", 
-        idx, next_slice.slice_number, info.re_left_diff, info.re_nbr_diff, info.change_ratio
-      @img_break_info << info
+#      next_slice = slice.likely_next_slice
+#      info = OpenStruct.new(slice: slice,
+#        re_left_diff: slice.right_edge_left_diff,
+#        re_nbr_diff: next_slice.diff_info.total_diff,
+#        change_ratio: next_slice.diff_info.total_diff.to_f / slice.right_edge_left_diff)
+#      puts sprintf "-- slice %2d has likely next idx of %2d   -  left/nbr/ratio = %6d/%6d/%5.2f", 
+#        idx, next_slice.slice_number, info.re_left_diff, info.re_nbr_diff, info.change_ratio
+#      @img_break_info << info
     end
   end
   
   def determine_cylinder_break
+    break_method = "unused right slice"
     unless an_unused_right_slice
       find_by_max_change_ratio
+      break_method = "max change ratio"
     end
-    puts "- the starting slice is at idx = #{@leftmost_slice_idx}, found via #{@break_method}"  
+    puts "- the starting slice is at idx = #{@leftmost_slice_idx}, found via #{break_method}"  
   end
   
   def an_unused_right_slice
-    @break_method = "unused right slice"
     possible_slices = (0..@num_slices-1).to_a
     slices_used = @slices.map { |slice| slice.likely_next_slice.slice_number }
     slices_unused = possible_slices - slices_used
@@ -123,7 +178,6 @@ private
   end
   
   def find_by_max_change_ratio
-    @break_method = "max change ratio"
     max_change_ratio = 0
     @leftmost_slice_idx = -1
     @img_break_info.each do |info|
