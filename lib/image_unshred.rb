@@ -38,7 +38,7 @@ private
     aggregate = ChunkyPNG::Image.new total_width, @img.dimension.height
     agg_tgt_idx = 0
     @slices.each do |slice|
-      next_slice = @slices[slice.likely_next_slice.slice_number]
+      next_slice = @slices[slice.next_slice_idx]
       total_width = slice.width + next_slice.width
       sample = ChunkyPNG::Image.new total_width, @img.dimension.height
       
@@ -72,7 +72,7 @@ private
     loop do
       slice.transfer_self_at(reconstructed, tgt_idx)
       tgt_idx += slice.width
-      next_slice_number = slice.likely_next_slice.slice_number
+      next_slice_number = slice.next_slice_idx
       break if (next_slice_number == @leftmost_slice_idx || tgt_idx >= @img.dimension.width)
       slice = @slices[next_slice_number]
     end
@@ -95,7 +95,7 @@ private
       # find which slices are using which others
       next_usage = {}
       @slices.each do |slice|
-        next_idx = slice.likely_next_slice.slice_number
+        next_idx = slice.next_slice_idx
         users = next_usage[next_idx] || []
         users << slice.slice_number
         next_usage[next_idx] = users
@@ -113,7 +113,7 @@ private
       max_change_ratio, idx_at_max = 0, nil
       overusing_slices.each do |idx|
         slice = @slices[idx]
-        change_ratio = slice.likely_next_slice.diff_info.change_ratio
+        change_ratio = slice.next_slice_change_ratio
         if change_ratio > max_change_ratio
           max_change_ratio = change_ratio
           idx_at_max = idx
@@ -142,7 +142,7 @@ private
   
   def an_unused_right_slice
     possible_slices = (0..@num_slices-1).to_a
-    slices_used = @slices.map { |slice| slice.likely_next_slice.slice_number }
+    slices_used = @slices.map { |slice| slice.next_slice_idx }
     slices_unused = possible_slices - slices_used
 #    p slices_unused
     if slices_unused.size > 1
@@ -158,10 +158,10 @@ private
     max_change_ratio = 0
     @leftmost_slice_idx = -1
     @slices.each do |slice|
-      next_slice_change_ratio = slice.likely_next_slice.diff_info.change_ratio
+      next_slice_change_ratio = slice.next_slice_change_ratio
       if next_slice_change_ratio > max_change_ratio
         max_change_ratio = next_slice_change_ratio
-        @leftmost_slice_idx = slice.likely_next_slice.slice_number
+        @leftmost_slice_idx = slice.next_slice_idx
       end
     end
   end

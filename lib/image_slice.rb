@@ -4,10 +4,18 @@ require 'ostruct'
 class ImageSlice
   attr_reader :left_col
   attr_reader :slice_number
-  attr_reader :neighbors
-  attr_reader :likely_next_slice
   attr_reader :start_col_idx, :end_col_idx
   attr_reader :right_edge_left_diff
+  
+  def next_slice_idx
+    @likely_next_slice.slice_number
+  end
+  def next_slice_total_diff
+    @likely_next_slice.diff_info.total_diff
+  end
+  def next_slice_change_ratio
+    @likely_next_slice.diff_info.change_ratio
+  end
   
   MINIMUM_SLICE_WIDTH = 10
   
@@ -18,7 +26,7 @@ class ImageSlice
   end
   
   def preprocess
-    info = self.class.calculate_column_diff_info @source_img.column(end_col_idx-1), @right_col
+    info = self.class.calculate_column_diff_info @source_img.column(@end_col_idx-1), @right_col
     @right_edge_left_diff = info.total_diff
   end
   
@@ -56,10 +64,10 @@ class ImageSlice
     calculate_likely_neighbor_extras
     puts sprintf "-- slice %2d has NEW likely next idx of %2d   -  left/nbr/ratio = %6d/%6d/%7.4f", 
       @slice_number, 
-      @likely_next_slice.slice_number, 
+      next_slice_idx, 
       @right_edge_left_diff, 
-      @likely_next_slice.diff_info.total_diff, 
-      @likely_next_slice.diff_info.change_ratio
+      next_slice_total_diff, 
+      next_slice_change_ratio
   end
   
   def analyze_right_left_matches(other_slices, verbose = nil)
@@ -75,16 +83,16 @@ class ImageSlice
     @likely_next_slice = @neighbors[0]
     @neighbors[1..-1].each do |neighbor|
       diff_to_new_neighbor = neighbor.diff_info.total_diff
-      @likely_next_slice = neighbor if diff_to_new_neighbor < @likely_next_slice.diff_info.total_diff
+      @likely_next_slice = neighbor if diff_to_new_neighbor < next_slice_total_diff
     end
     # now that we know, collect a bit more info and inform
     calculate_likely_neighbor_extras
     puts sprintf "-- slice %2d has likely next idx of %2d   -  left/nbr/ratio = %6d/%6d/%7.4f", 
       @slice_number, 
-      @likely_next_slice.slice_number, 
+      next_slice_idx, 
       @right_edge_left_diff, 
-      @likely_next_slice.diff_info.total_diff, 
-      @likely_next_slice.diff_info.change_ratio
+      next_slice_total_diff, 
+      next_slice_change_ratio
   end
   
 private
