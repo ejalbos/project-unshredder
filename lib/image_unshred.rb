@@ -31,6 +31,12 @@ private
   
   def output_partials
     # now write them out in pairs
+    # will also write out a single one with all the partials
+    agg_pair_gap = 20
+    total_width = @slices.inject(0) { |sum, slice| sum + slice.width*2 }
+    total_width += (@slices.size-1) * agg_pair_gap
+    aggregate = ChunkyPNG::Image.new total_width, @img.dimension.height
+    agg_tgt_idx = 0
     @slices.each do |slice|
       next_slice = @slices[slice.likely_next_slice.slice_number]
       total_width = slice.width + next_slice.width
@@ -38,13 +44,22 @@ private
       
       tgt_idx = 0
       slice.transfer_self_at(sample, tgt_idx)
+      slice.transfer_self_at(aggregate, agg_tgt_idx)
       tgt_idx += slice.width
+      agg_tgt_idx += slice.width 
+
       next_slice.transfer_self_at(sample, tgt_idx)
-      
+      next_slice.transfer_self_at(aggregate, agg_tgt_idx)
+      agg_tgt_idx += next_slice.width + agg_pair_gap
+     
       name = @fname_orig.sub(/\.png\Z/, "_partial_#{slice.slice_number}_#{next_slice.slice_number}.png")
       puts "- writing pairing file #{name}"
       sample.save name
     end
+    
+    name = @fname_orig.sub(/\.png\Z/, "_partial_aggregate.png")
+      puts "- writing pairing aggregate file #{name}"
+    aggregate.save name
   end
  
   def output_unshredded_image
@@ -155,10 +170,10 @@ unless filename && slice_width
   exit
 end
 
-begin
   ius = ImageUnshred.new filename, slice_width.to_i
   ius.process
   ius.output
+begin
 rescue StandardError => err
   puts "- processing error: #{err.message}"
 end

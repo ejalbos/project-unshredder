@@ -10,6 +10,12 @@ Finally, writes out all the 2-slices and then the final reconstructed image.
 
 NOTE: Now can find where the image cylinder should be broken in order to know which slice to start with.
 
+##
+
+more details to come:
+- can shred originals
+- can unshred via rake command
+
 ## Running It
 
-"rake" and it does the rest
+run "rake -T" to see what is available
