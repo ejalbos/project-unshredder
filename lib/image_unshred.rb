@@ -101,11 +101,10 @@ private
         next_usage[next_idx] = users
       end
       # now find the multiples
-      overused_slice_idx = overusing_slices = nil
+      overusing_slices = nil
       next_usage.each do |k, v|
         if v.size > 1
           puts "-- slice #{k} multiply used by slices #{v}"
-          overused_slice_idx = k
           overusing_slices = v
           break
         end
