@@ -58,7 +58,7 @@ private
       slice.transfer_self_at(reconstructed, tgt_idx)
       tgt_idx += slice.width
       next_slice_number = slice.likely_next_slice.slice_number
-      break if next_slice_number == @leftmost_slice_idx
+      break if (next_slice_number == @leftmost_slice_idx || tgt_idx >= @img.dimension.width)
       slice = @slices[next_slice_number]
     end
     reconstructed.save name
@@ -86,6 +86,27 @@ private
   end
   
   def determine_cylinder_break
+    unless an_unused_right_slice
+      find_by_max_change_ratio
+    end
+    puts "- the starting slice is at idx = #{@leftmost_slice_idx}, found via #{@break_method}"  
+  end
+  
+  def an_unused_right_slice
+    @break_method = "unused right slice"
+    possible_slices = (0..@num_slices-1).to_a
+    slices_used = @slices.map { |slice| slice.likely_next_slice.slice_number }
+    slices_unused = possible_slices - slices_used
+#    p slices_unused
+    if slices_unused.size == 1
+      @leftmost_slice_idx = slices_unused[0]
+    else
+      false
+    end
+  end
+  
+  def find_by_max_change_ratio
+    @break_method = "max change ratio"
     max_change_ratio = 0
     @leftmost_slice_idx = -1
     @img_break_info.each do |info|
@@ -94,7 +115,6 @@ private
         @leftmost_slice_idx = info.slice.likely_next_slice.slice_number
       end
     end
-    puts "- the starting slice is at idx = #{@leftmost_slice_idx}"  
   end
   
   def create_slices
