@@ -31,18 +31,13 @@ private
   def output_partials
     # now write them out in pairs
     @slices.each do |slice|
-      name = @fname_orig.sub(/\.png\Z/, "_potential_#{slice.slice_number}_#{slice.likely_next_slice_info.slice_number}.png")
+      name = @fname_orig.sub(/\.png\Z/, "_potential_#{slice.slice_number}_#{slice.likely_next_slice.slice_number}.png")
       sample = ChunkyPNG::Image.new @slice_width*2, @img.dimension.height
       tgt_idx = 0
-      (slice.start_col_idx..slice.end_col_idx).each do |idx|
-        sample.replace_column! tgt_idx, @img.column(idx)
-        tgt_idx += 1
-      end
-      slice = @slices[slice.likely_next_slice_info.slice_number]
-      (slice.start_col_idx..slice.end_col_idx).each do |idx|
-        sample.replace_column! tgt_idx, @img.column(idx)
-        tgt_idx += 1
-      end
+      slice.transfer_self_at(sample, tgt_idx)
+      tgt_idx += slice.width
+      slice = @slices[slice.likely_next_slice.slice_number]
+      slice.transfer_self_at(sample, tgt_idx)
       puts "- writing pairing file #{name}"
       sample.save name
     end
@@ -56,11 +51,9 @@ private
     slice = @slices[@leftmost_slice_idx]
     tgt_idx = 0
     loop do
-      (slice.start_col_idx..slice.end_col_idx).each do |idx|
-        reconstructed.replace_column! tgt_idx, @img.column(idx)
-        tgt_idx += 1
-      end
-      next_slice_number = slice.likely_next_slice_info.slice_number
+      slice.transfer_self_at(reconstructed, tgt_idx)
+      tgt_idx += slice.width
+      next_slice_number = slice.likely_next_slice.slice_number
       break if next_slice_number == @leftmost_slice_idx
       slice = @slices[next_slice_number]
     end
@@ -71,10 +64,13 @@ private
   
   def determine_likely_ordering
     puts "- determining likely ordering"
+    @slices.each do |slice|
+      slice.preprocess
+    end
     @break_info = []
     @slices.each_with_index do |slice, idx|
       slice.analyze_right_left_matches @slices - [slice] ###, true
-      likely_next = slice.likely_next_slice_info
+      likely_next = slice.likely_next_slice
       info =  BreakInfo.new(slice, slice.right_edge_left_diff, likely_next.diff_info.total_diff) 
       puts sprintf "-- slice %2d has likely next idx of %2d   -  right_edge_left_diff = %5d, slice_diff = %5d", 
         idx, likely_next.slice_number, info.right_edge_left_diff, info.slice_diff 
@@ -86,7 +82,7 @@ private
     start_slice_idxs = []
     puts "- determining image break point"
     @break_info.each do |info|
-      start_slice_idxs << info.slice.likely_next_slice_info.slice_number if info.slice_diff > 3*info.right_edge_left_diff
+      start_slice_idxs << info.slice.likely_next_slice.slice_number if info.slice_diff > 3*info.right_edge_left_diff
     end
     if start_slice_idxs.size == 0
       raise "Unable to determine a starting slice"
