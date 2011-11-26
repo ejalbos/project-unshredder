@@ -57,17 +57,11 @@ class ImageSlice
   end
   
   NeighborInfo = Struct.new(:slice_number, :diff_info)
-  
+
   def replace_likely_next_slice(other)
-    diff_info = self.class.calculate_column_diff_info @right_col, other.left_col
-    @likely_next_slice = NeighborInfo.new(other.slice_number, diff_info)
+    @likely_next_slice = new_neighbor_with_diff_info other
     calculate_likely_neighbor_extras
-    puts sprintf "-- slice %2d has NEW likely next idx of %2d   -  left/nbr/ratio = %6d/%6d/%7.4f", 
-      @slice_number, 
-      next_slice_idx, 
-      @right_edge_left_diff, 
-      next_slice_total_diff, 
-      next_slice_change_ratio
+    print_likely_neighbor_inform "NEW "
   end
   
   def analyze_right_left_matches(other_slices, verbose = nil)
@@ -75,8 +69,7 @@ class ImageSlice
     puts "--------------------- analyze_right_left_matches for slice #{slice_number}" if verbose
     @neighbors = []
     other_slices.each do |other|
-      diff_info = self.class.calculate_column_diff_info @right_col, other.left_col
-      @neighbors << NeighborInfo.new(other.slice_number, diff_info)
+      @neighbors << new_neighbor_with_diff_info(other)
       puts sprintf "  %2d %s", other.slice_number, diff_info.to_s if verbose
     end
     # now find the likely next slice
@@ -87,15 +80,24 @@ class ImageSlice
     end
     # now that we know, collect a bit more info and inform
     calculate_likely_neighbor_extras
-    puts sprintf "-- slice %2d has likely next idx of %2d   -  left/nbr/ratio = %6d/%6d/%7.4f", 
+    print_likely_neighbor_inform
+  end
+  
+private
+  
+  def new_neighbor_with_diff_info(other)
+    diff_info = self.class.calculate_column_diff_info @right_col, other.left_col
+    NeighborInfo.new(other.slice_number, diff_info)
+  end
+  
+  def print_likely_neighbor_inform(extra = nil)
+    puts sprintf "-- slice %2d has #{extra ? extra : ""}likely next idx of %2d   -  left/nbr/ratio = %6d/%6d/%7.4f", 
       @slice_number, 
       next_slice_idx, 
       @right_edge_left_diff, 
       next_slice_total_diff, 
       next_slice_change_ratio
   end
-  
-private
   
   def calculate_likely_neighbor_extras
     diff_info = @likely_next_slice.diff_info
