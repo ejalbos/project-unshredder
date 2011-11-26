@@ -50,6 +50,18 @@ class ImageSlice
   
   NeighborInfo = Struct.new(:slice_number, :diff_info)
   
+  def replace_likely_next_slice(other)
+    diff_info = self.class.calculate_column_diff_info @right_col, other.left_col
+    @likely_next_slice = NeighborInfo.new(other.slice_number, diff_info)
+    calculate_likely_neighbor_extras
+    puts sprintf "-- slice %2d has NEW likely next idx of %2d   -  left/nbr/ratio = %6d/%6d/%7.4f", 
+      @slice_number, 
+      @likely_next_slice.slice_number, 
+      @right_edge_left_diff, 
+      @likely_next_slice.diff_info.total_diff, 
+      @likely_next_slice.diff_info.change_ratio
+  end
+  
   def analyze_right_left_matches(other_slices, verbose = nil)
     # find all the diffs compared to each of the others
     puts "--------------------- analyze_right_left_matches for slice #{slice_number}" if verbose
@@ -67,13 +79,15 @@ class ImageSlice
     end
     # now that we know, collect a bit more info and inform
     calculate_likely_neighbor_extras
-    puts sprintf "-- slice %2d has likely next idx of %2d   -  left/nbr/ratio = %6d/%6d/%5.2f", 
+    puts sprintf "-- slice %2d has likely next idx of %2d   -  left/nbr/ratio = %6d/%6d/%7.4f", 
       @slice_number, 
       @likely_next_slice.slice_number, 
       @right_edge_left_diff, 
       @likely_next_slice.diff_info.total_diff, 
       @likely_next_slice.diff_info.change_ratio
   end
+  
+private
   
   def calculate_likely_neighbor_extras
     diff_info = @likely_next_slice.diff_info

@@ -85,11 +85,11 @@ private
       slice.preprocess
     end
     find_slice_pairs_based_on_lowest_diff
-#    adjust_for_double_next_usage
+    possible_adjust_for_double_next_usage
   end
   
-  def adjust_for_double_next_usage
-    # see if there is an unused slice
+  def possible_adjust_for_double_next_usage
+    # an unused slice means something used more than once on the right
     if unused_slice_idx = an_unused_right_slice
       puts "-- unused right slice with idx #{unused_slice_idx}"
       # find which slices are using which others
@@ -111,12 +111,16 @@ private
         end
       end
       # now make the higher change ratio one use the unused slice
-#      max_change_ratio, max_idx = 0, nil
-#      overusing_slices.inject(0.to_f) do |max_change, slice|
-#        idx = slice.slice_number
-#        if slice.li
-#      end
-#      exit
+      max_change_ratio, idx_at_max = 0, nil
+      overusing_slices.each do |idx|
+        slice = @slices[idx]
+        change_ratio = slice.likely_next_slice.diff_info.change_ratio
+        if change_ratio > max_change_ratio
+          max_change_ratio = change_ratio
+          idx_at_max = idx
+        end
+      end
+      @slices[idx_at_max].replace_likely_next_slice @slices[unused_slice_idx]
     else
       puts "- no unused right slices"
     end
