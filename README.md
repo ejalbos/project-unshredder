@@ -3,18 +3,14 @@
 Trying to solve the engineering challange posed by this website:
 http://instagram-engineering.tumblr.com/post/12651721845/instagram-engineering-challenge-the-unshredder
 
-It reads in the file (provided) and breaks it up into slices (tried the part about automatically finding the breaks but not as obvious as I thought).
-Along the way various info printed.
+It reads in the file (provided) and breaks it up into slices of known size.
+Along the way various info is printed.
+The image output is:
+- tentative matched pairs (to show what the alroithm is matching up)
+- and aggregate of the matched pairs (for easier viewing)
+- the unshredded image
 
-Finally, writes out all the 2-slices and then the final reconstructed image.
-
-NOTE: Now can find where the image cylinder should be broken in order to know which slice to start with.
-
-##
-
-more details to come:
-- can shred originals
-- can unshred via rake command
+You can shred your own images (see the rake 'shred' task) and try the unshredder on them.
 
 ## Running It
 
