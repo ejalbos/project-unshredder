@@ -98,7 +98,9 @@ private
     slices_used = @slices.map { |slice| slice.likely_next_slice.slice_number }
     slices_unused = possible_slices - slices_used
 #    p slices_unused
-    if slices_unused.size == 1
+    if slices_unused.size > 1
+      raise "Excess unused slices: #{slices_unused}"
+    elsif slices_unused.size == 1
       @leftmost_slice_idx = slices_unused[0]
     else
       false
@@ -147,10 +149,10 @@ unless filename && slice_width
   exit
 end
 
+begin
   ius = ImageUnshred.new filename, slice_width.to_i
   ius.process
   ius.output
-begin
 rescue StandardError => err
   puts "- processing error: #{err.message}"
 end
