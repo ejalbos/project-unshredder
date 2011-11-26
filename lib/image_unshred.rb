@@ -169,7 +169,7 @@ private
   def create_slices
     dim = @img.dimension
     puts "- image is #{dim.width}x#{dim.height} pixels"
-    if @slice_width
+    if @slice_width > 0
       @num_slices = dim.width / @slice_width
       puts "- creating slices based on known slice width of #{@slice_width} pixels"
       @slices = []
@@ -181,9 +181,34 @@ private
         right_col += @slice_width
       end
     else
-#      puts "- searching image for slices"
+      puts "- searching image for slices - *NOT*YET*IMPLEMENTED*"
+      exit
 #      min_slice_width = ImageSlice::MINIMUM_SLICE_WIDTH
-#      left_col, right_col = 0
+#      left_col_idx = 0
+#      last_diff = 1
+#      total_diff = 0
+#      (dim.width-1).times do |idx|
+#        left_col = @img.column idx if idx == 0
+#        right_col = @img.column idx+1
+#        diff_to_next = ImageSlice.calculate_column_diff_info(left_col, right_col).total_diff
+#        
+#        if idx > left_col_idx + min_slice_width
+#          change_ratio_to_last = diff_to_next.to_f/last_diff
+#          avg_diff = total_diff / (idx - left_col_idx + 1)
+#          change_ratio_to_avg = diff_to_next.to_f/avg_diff
+#          puts sprintf "%4d  %7.4f, %7.4f", idx, change_ratio_to_last, change_ratio_to_avg
+#          if change_ratio_to_last > 2
+#            puts "--- mark slice: left=#{left_col_idx}, right=#{idx}, ratios=#{change_ratio_to_last}"
+#            left_col_idx = idx+1
+#            total_diff = -diff_to_next
+#          end
+#        end
+#        total_diff += diff_to_next
+#        last_diff = diff_to_next
+#        left_col = right_col
+#        exit if idx > 200
+#      end
+#      exit
     end
     puts "- there are #{@slices.size} slices"
   end
@@ -194,7 +219,7 @@ end
 puts "--- Image UnShredder: BEGIN ---"
 filename = ARGV[0]
 slice_width = ARGV[1]
-unless filename && slice_width
+unless filename ## && slice_width
   puts "- you must specify a filename to unshred"
   puts "  try: 'rake unshred[filename, slice_width]'"
   puts "   or: 'bundle exec ruby lib/image_unshred.rb filename slice_width'"
